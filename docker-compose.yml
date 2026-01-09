@@ -1,0 +1,137 @@
+# =============================================================================
+# Docker Compose - Student Dashboard Stack
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # Frontend - Nginx serving static files
+  # ---------------------------------------------------------------------------
+  frontend:
+    container_name: dashboard-frontend
+    build:
+      context: .
+      dockerfile: nginx.Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - frontend-network
+      - backend-network
+    healthcheck:
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+  # ---------------------------------------------------------------------------
+  # API - FastAPI Python Backend
+  # ---------------------------------------------------------------------------
+  api:
+    container_name: dashboard-api
+    build:
+      context: .
+      dockerfile: python.Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+      REDIS_HOST: redis
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8000/health || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - backend-network
+
+  # ---------------------------------------------------------------------------
+  # Database - PostgreSQL
+  # ---------------------------------------------------------------------------
+  db:
+    container_name: dashboard-db
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql
+      - ./sqlfiles:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} && psql -U ${POSTGRES_USER} -d ${POSTGRES_DB} -c 'SELECT 1 FROM students LIMIT 1'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+    networks:
+      - backend-network
+
+  # ---------------------------------------------------------------------------
+  # Cache - Redis
+  # ---------------------------------------------------------------------------
+  redis:
+    container_name: dashboard-redis
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      - backend-network
+
+  # ---------------------------------------------------------------------------
+  # Adminer - Database Administration (dev only)
+  # ---------------------------------------------------------------------------
+  adminer:
+    container_name: dashboard-adminer
+    image: adminer:4
+    restart: unless-stopped
+    # Port non exposé en production - décommenter pour le dev
+    ports:
+      - "8081:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - backend-network
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  frontend-network:
+    name: dashboard-frontend
+    driver: bridge
+  backend-network:
+    name: dashboard-backend
+    driver: bridge
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  postgres_data:
+    name: dashboard-postgres-data
+  redis_data:
+    name: dashboard-redis-data
