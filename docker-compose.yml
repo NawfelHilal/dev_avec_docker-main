@@ -64,7 +64,7 @@ services:
   # ---------------------------------------------------------------------------
   db:
     container_name: dashboard-db
-    image: postgres:18-alpine
+    image: postgres:17-alpine
     restart: unless-stopped
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
