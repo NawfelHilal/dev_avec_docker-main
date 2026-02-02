@@ -34,7 +34,7 @@ jobs:
       - name: Check logs for pattern
         run: |
           docker logs test-api
-          docker logs test-api | grep -qi "running on" || (echo "Startup pattern not found" && exit 1)
+          docker logs test-api 2>&1 | grep -qi "running on" || (echo "Startup pattern not found" && exit 1)
 
       - name: Smoke Test (Curl)
         run: |
