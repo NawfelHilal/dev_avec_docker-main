@@ -25,7 +25,7 @@ jobs:
           echo "API_IMAGE=ghcr.io/$REPO_LOWER/api:latest" >> .env
 
       - name: Start Stack
-        run: docker-compose up -d
+        run: docker compose up -d
 
       - name: Wait for services
         run: sleep 20
