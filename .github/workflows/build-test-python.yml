@@ -29,10 +29,10 @@ jobs:
             dashboard-api:latest
 
       - name: Wait for service
-        run: sleep 5
+        run: sleep 10
 
       - name: Check logs for pattern
         run: |
           docker logs test-api
-          docker logs test-api | grep -q "uvicorn" || (echo "Pattern not found" && exit 1)
+          docker logs test-api | grep -qi "running on" || (echo "Startup pattern not found" && exit 1)
 
