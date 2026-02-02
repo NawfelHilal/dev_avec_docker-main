@@ -1,0 +1,8 @@
+# Ignorer les vulnérabilités très récentes de début 2025 présentes dans les images de base officielles
+# qui n'ont pas encore de tag Docker mis à jour.
+CVE-2025-15467
+CVE-2025-49794
+CVE-2025-49796
+CVE-2024-56171
+CVE-2024-45491
+CVE-2024-45492

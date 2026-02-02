@@ -23,6 +23,7 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL'
+          trivyignore: .trivyignore
 
       - name: Scan Postgres
         uses: aquasecurity/trivy-action@master
@@ -33,6 +34,7 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL'
+          trivyignore: .trivyignore
 
       - name: Scan Redis
         uses: aquasecurity/trivy-action@master
@@ -43,3 +45,4 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL'
+          trivyignore: .trivyignore
