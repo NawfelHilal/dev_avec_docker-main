@@ -46,7 +46,3 @@ jobs:
             echo "Error: Not using GHCR image."
             exit 1
           fi
-
-      - name: Cleanup
-        if: always()
-        run: docker-compose down
