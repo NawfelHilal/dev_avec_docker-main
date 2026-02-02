@@ -28,11 +28,18 @@ jobs:
             -e SKIP_DB_CHECK=true \
             dashboard-api:latest
 
-      - name: Wait for service
-        run: sleep 10
-
-      - name: Check logs for pattern
+      - name: Smoke Test (Curl)
         run: |
-          docker logs test-api
-          docker logs test-api | grep -qi "running on"
-
+          echo "Starting smoke test on http://localhost:8000/health"
+          for i in {1..10}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/health || echo "000")
+            echo "Attempt $i: Status $STATUS"
+            if [ "$STATUS" -eq 200 ] || [ "$STATUS" -eq 503 ] || [ "$STATUS" -eq 500 ]; then
+              echo "Service is reachable (Status: $STATUS)"
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "Service failed to respond after several attempts."
+          curl -v http://localhost:8000/health || true
+          exit 1
