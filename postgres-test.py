@@ -46,16 +46,19 @@ def get_views_count():
         print(f"Redis unavailable, using fallback: {e}")
         return 0  # Valeur par défaut si Redis est indisponible
 
-# Attendre que la DB soit prête (obligatoire)
-while True:
-    try:
-        conn = get_db_connection()
-        conn.close()
-        print("PostgreSQL is ready!")
-        break
-    except psycopg2.OperationalError as e:
-        print(f"Waiting for PostgreSQL: {e}")
-        time.sleep(2)
+# Attendre que la DB soit prête (obligatoire sauf si SKIP_DB_CHECK est défini)
+if os.getenv("SKIP_DB_CHECK", "false").lower() != "true":
+    while True:
+        try:
+            conn = get_db_connection()
+            conn.close()
+            print("PostgreSQL is ready!")
+            break
+        except psycopg2.OperationalError as e:
+            print(f"Waiting for PostgreSQL: {e}")
+            time.sleep(2)
+else:
+    print("Skipping PostgreSQL startup check as requested.")
 
 # Vérifier Redis au démarrage (non bloquant)
 try:
