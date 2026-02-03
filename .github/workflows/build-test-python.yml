@@ -20,6 +20,7 @@ jobs:
       - name: Run container
         run: |
           docker run -d --name test-api \
+            -p 8000:8000 \
             -e SKIP_DB_CHECK=true \
             -e POSTGRES_HOST=localhost \
             -e POSTGRES_USER=user \
