@@ -18,10 +18,14 @@ jobs:
 
 
       - name: Run container
-        env:
-          SKIP_DB_CHECK: true
         run: |
-          docker run -d --name test-api dashboard-api:latest
+          docker run -d --name test-api \
+            -e SKIP_DB_CHECK=true \
+            -e POSTGRES_HOST=localhost \
+            -e POSTGRES_USER=user \
+            -e POSTGRES_PASSWORD=pass \
+            -e POSTGRES_DB=db \
+            dashboard-api:latest
       
       - name: Wait for service
         run: sleep 10
