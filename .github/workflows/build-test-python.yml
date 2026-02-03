@@ -16,6 +16,9 @@ jobs:
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          # Environment variables for pg_isready
+          PGUSER: ${{ secrets.POSTGRES_USER }}
+          PGDATABASE: ${{ secrets.POSTGRES_DB }}
         ports:
           - 5432:5432
         options: >-
