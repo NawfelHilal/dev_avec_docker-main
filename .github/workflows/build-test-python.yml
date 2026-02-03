@@ -8,6 +8,7 @@ on:
 
 jobs:
   build-test:
+    runs-on: ubuntu-latest
     services:
       postgres:
         image: postgres:17-alpine
