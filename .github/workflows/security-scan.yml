@@ -10,36 +10,17 @@ jobs:
   security-scan:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    strategy:
+      matrix:
+        image: ['nginx:1.27-alpine', 'postgres:17-alpine', 'redis:7-alpine']
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Scan Infrastructure Images
+      - name: Scan Image ${{ matrix.image }}
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'nginx:1.27-alpine'
-          format: 'table'
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL'
-          trivyignore: .trivyignore
-
-      - name: Scan Postgres
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: 'postgres:17-alpine'
-          format: 'table'
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL'
-          trivyignore: .trivyignore
-
-      - name: Scan Redis
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: 'redis:7-alpine'
+          image-ref: ${{ matrix.image }}
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
