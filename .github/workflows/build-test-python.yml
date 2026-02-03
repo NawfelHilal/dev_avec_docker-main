@@ -19,7 +19,7 @@ jobs:
 
       - name: Run container
         env:
-        SKIP_DB_CHECK: true
+          SKIP_DB_CHECK: true
         run: |
           docker run -d --name test-api \
      
