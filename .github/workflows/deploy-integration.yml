@@ -10,19 +10,18 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    env:
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Environment
+      - name: Set up API Image tag
         run: |
-          echo "POSTGRES_USER='${{ secrets.POSTGRES_USER }}'" >> .env
-          echo "POSTGRES_PASSWORD='${{ secrets.POSTGRES_PASSWORD }}'" >> .env
-          echo "POSTGRES_DB='${{ secrets.POSTGRES_DB }}'" >> .env
-          # Use the image pushed in previous workflow
-          # We use github.repository in lowercase for GHCR
           REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          echo "API_IMAGE=ghcr.io/$REPO_LOWER/api:latest" >> .env
+          echo "API_IMAGE=ghcr.io/$REPO_LOWER/api:latest" >> $GITHUB_ENV
 
       - name: Start Stack
         run: docker compose up -d
