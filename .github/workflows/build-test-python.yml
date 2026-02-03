@@ -9,6 +9,25 @@ on:
 jobs:
   build-test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: pass
+          POSTGRES_DB: db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -19,13 +38,13 @@ jobs:
       - name: Run container
         run: |
           docker run -d --name test-api \
-            -p 8000:8000 \
-            -e POSTGRES_HOST=mock \
+            --network host \
+            -e POSTGRES_HOST=localhost \
             -e POSTGRES_PASSWORD=pass \
             -e POSTGRES_USER=user \
             -e POSTGRES_DB=db \
-            -e REDIS_HOST=mock \
-            -e SKIP_DB_CHECK=true \
+            -e REDIS_HOST=localhost \
+            -e SKIP_DB_CHECK=false \
             dashboard-api:latest
 
       - name: Wait for service
