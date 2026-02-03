@@ -12,7 +12,7 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     strategy:
       matrix:
-        image: ['nginx:1.27-alpine', 'postgres:17-alpine', 'redis:7-alpine']
+        image: ['nginx:alpine', 'postgres:alpine', 'redis:alpine']
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

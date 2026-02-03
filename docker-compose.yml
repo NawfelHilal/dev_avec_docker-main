@@ -33,9 +33,9 @@ services:
   api:
     container_name: dashboard-api
     image: ${API_IMAGE:-dashboard-api:latest}
-    build:
-      context: .
-      dockerfile: python.Dockerfile
+    # build:
+    #   context: .
+    #   dockerfile: python.Dockerfile
     restart: unless-stopped
     ports:
       - "8000:8000"
