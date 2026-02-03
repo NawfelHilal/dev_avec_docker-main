@@ -16,9 +16,9 @@ jobs:
 
       - name: Set up Environment
         run: |
-          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env
-          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
-          echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env
+          echo "POSTGRES_USER='${{ secrets.POSTGRES_USER }}'" >> .env
+          echo "POSTGRES_PASSWORD='${{ secrets.POSTGRES_PASSWORD }}'" >> .env
+          echo "POSTGRES_DB='${{ secrets.POSTGRES_DB }}'" >> .env
           # Use the image pushed in previous workflow
           # We use github.repository in lowercase for GHCR
           REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
