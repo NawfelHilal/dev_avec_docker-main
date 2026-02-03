@@ -23,9 +23,9 @@ jobs:
             -p 8000:8000 \
             -e SKIP_DB_CHECK=true \
             -e POSTGRES_HOST=localhost \
-            -e POSTGRES_USER=user \
-            -e POSTGRES_PASSWORD=pass \
-            -e POSTGRES_DB=db \
+            -e POSTGRES_USER="${{ secrets.POSTGRES_USER }}" \
+            -e POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}" \
+            -e POSTGRES_DB="${{ secrets.POSTGRES_DB }}" \
             dashboard-api:latest
       
       - name: Wait for service
