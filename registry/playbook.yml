@@ -8,6 +8,9 @@
     ghcr_user: "{{ ghcr_user }}"
     ghcr_token: "{{ ghcr_token }}"
     api_image: "{{ api_image }}"
+    postgres_user: "{{ postgres_user }}"
+    postgres_password: "{{ postgres_password }}"
+    postgres_db: "{{ postgres_db }}"
 
   tasks:
     # 1. Installation Docker
@@ -52,9 +55,13 @@
         group: ubuntu
         mode: '0644'
 
-    - name: Copie du fichier .env
+    - name: Génération du fichier .env depuis les secrets
       copy:
-        src: ../.env
+        content: |
+          POSTGRES_HOST=db
+          POSTGRES_USER={{ postgres_user }}
+          POSTGRES_PASSWORD={{ postgres_password }}
+          POSTGRES_DB={{ postgres_db }}
         dest: "{{ project_dir }}/.env"
         owner: ubuntu
         group: ubuntu

@@ -114,7 +114,7 @@ jobs:
       - name: Run Ansible Playbook
         run: |
           ansible-playbook -i inventory.ini playbook.yml \
-            --extra-vars "ghcr_user=${{ github.actor }} ghcr_token=${{ secrets.GITHUB_TOKEN }} api_image=${{ env.REGISTRY }}/${{ env.API_IMAGE_NAME }}:latest"
+            --extra-vars "ghcr_user=${{ github.actor }} ghcr_token=${{ secrets.GITHUB_TOKEN }} api_image=${{ env.REGISTRY }}/${{ env.API_IMAGE_NAME }}:latest postgres_user=${{ secrets.POSTGRES_USER }} postgres_password=${{ secrets.POSTGRES_PASSWORD }} postgres_db=${{ secrets.POSTGRES_DB }}"
         working-directory: registry
 
       # =========================
