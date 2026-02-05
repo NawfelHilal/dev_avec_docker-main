@@ -25,13 +25,15 @@
         groups: docker
         append: yes
 
-    # 2. Authentification GHCR
+    # Reset SSH connection to apply group membership
+    - name: Reset SSH connection
+      meta: reset_connection
+
+    # 2. Authentification GHCR (via shell car le groupe docker vient d'être appliqué)
     - name: Authentification au registre GHCR
-      community.docker.docker_login:
-        registry: ghcr.io
-        username: "{{ ghcr_user }}"
-        password: "{{ ghcr_token }}"
+      shell: echo "{{ ghcr_token }}" | docker login ghcr.io -u "{{ ghcr_user }}" --password-stdin
       become_user: ubuntu
+      no_log: true
 
     # 3. Préparation du projet
     - name: Création du dossier du projet
