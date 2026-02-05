@@ -4,6 +4,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.92"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.6"
+    }
   }
 
   required_version = ">= 1.2"
@@ -24,16 +28,22 @@ data "aws_ami" "ubuntu" {
   }
 }
 
-# 2. Clé SSH
+# 2. Suffixe unique pour éviter les conflits (tfstate éphémère)
+resource "random_id" "suffix" {
+  byte_length = 4
+}
+
+# 3. Clé SSH
 resource "tls_private_key" "pk" {
   algorithm = "RSA"
   rsa_bits  = 4096
 }
 
 resource "aws_key_pair" "generated_key" {
-  key_name   = "registry-key-simple"
+  key_name   = "dashboard-key-${random_id.suffix.hex}"
   public_key = tls_private_key.pk.public_key_openssh
 }
+
 
 resource "local_file" "ssh_key" {
   filename        = "${path.module}/registry-key-simple.pem"
@@ -41,10 +51,10 @@ resource "local_file" "ssh_key" {
   file_permission = "0400"
 }
 
-# 3. Security Group (Port 5000 ouvert !)
+# 4. Security Group
 resource "aws_security_group" "registry_sg" {
-  name        = "registry-sg-simple"
-  description = "Allow SSH, HTTP (UI), Registry (5000)"
+  name        = "dashboard-sg-${random_id.suffix.hex}"
+  description = "Allow SSH, Frontend, API, Adminer"
   ingress {
     description = "SSH"
     from_port   = 22
