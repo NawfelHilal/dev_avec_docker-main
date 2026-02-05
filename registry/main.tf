@@ -51,10 +51,15 @@ resource "local_file" "ssh_key" {
   file_permission = "0400"
 }
 
-# 4. Security Group
+# 4. Security Group (nom fixe - réutilisé entre les déploiements)
 resource "aws_security_group" "registry_sg" {
-  name        = "dashboard-sg-${random_id.suffix.hex}"
+  name        = "dashboard-sg"
   description = "Allow SSH, Frontend, API, Adminer"
+
+  # Éviter les erreurs si le SG existe déjà
+  lifecycle {
+    create_before_destroy = false
+  }
   ingress {
     description = "SSH"
     from_port   = 22
