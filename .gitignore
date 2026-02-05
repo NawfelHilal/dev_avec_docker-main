@@ -34,3 +34,6 @@ __pycache__/
 
 # Clés SSH générées
 *.pem
+
+# Ansible (généré dynamiquement)
+inventory.ini
