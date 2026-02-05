@@ -24,3 +24,13 @@ __pycache__/
 
 # Logs
 *.log
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraform.lock.hcl
+
+# Clés SSH générées
+*.pem

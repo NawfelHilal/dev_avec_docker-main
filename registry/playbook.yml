@@ -1,0 +1,96 @@
+---
+- name: Déploiement du Dashboard Project (GHCR)
+  hosts: all
+  become: yes
+  vars:
+    project_dir: "/home/ubuntu/dashboard-project"
+    # Variables reçues via --extra-vars du CI
+    ghcr_user: "{{ ghcr_user }}"
+    ghcr_token: "{{ ghcr_token }}"
+    api_image: "{{ api_image }}"
+
+  tasks:
+    # 1. Installation Docker
+    - name: Installation des paquets Docker
+      apt:
+        update_cache: yes
+        name:
+          - docker.io
+          - docker-compose-v2
+        state: present
+
+    - name: Ajout user au groupe docker
+      user:
+        name: ubuntu
+        groups: docker
+        append: yes
+
+    # 2. Authentification GHCR
+    - name: Authentification au registre GHCR
+      community.docker.docker_login:
+        registry: ghcr.io
+        username: "{{ ghcr_user }}"
+        password: "{{ ghcr_token }}"
+      become_user: ubuntu
+
+    # 3. Préparation du projet
+    - name: Création du dossier du projet
+      file:
+        path: "{{ project_dir }}"
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    - name: Copie du docker-compose.yml
+      copy:
+        src: ../docker-compose.yml
+        dest: "{{ project_dir }}/docker-compose.yml"
+        owner: ubuntu
+        group: ubuntu
+        mode: '0644'
+
+    - name: Copie du fichier .env
+      copy:
+        src: ../.env
+        dest: "{{ project_dir }}/.env"
+        owner: ubuntu
+        group: ubuntu
+        mode: '0600'
+
+    - name: Copie des Dockerfiles et fichiers critiques
+      copy:
+        src: "../{{ item }}"
+        dest: "{{ project_dir }}/{{ item }}"
+      loop:
+        - nginx.Dockerfile
+        - python.Dockerfile
+        - postgres-test.py
+        - requirements.txt
+
+    - name: Copie des dossiers sources
+      copy:
+        src: "../{{ item }}/"
+        dest: "{{ project_dir }}/{{ item }}/"
+      loop:
+        - frontend
+        - nginx
+        - sqlfiles
+
+    # 4. Déploiement
+    - name: Nettoyage des anciens conteneurs
+      shell: docker compose down --remove-orphans || true
+      args:
+        chdir: "{{ project_dir }}"
+      ignore_errors: yes
+
+    - name: Démarrage de la stack
+      shell: docker compose up -d --build
+      args:
+        chdir: "{{ project_dir }}"
+      environment:
+        API_IMAGE: "{{ api_image }}"
+
+
+
+
