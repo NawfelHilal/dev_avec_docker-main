@@ -51,15 +51,21 @@ resource "local_file" "ssh_key" {
   file_permission = "0400"
 }
 
-# 4. Security Group (nom fixe - réutilisé entre les déploiements)
+# 4. Security Group (lookup existing or create if not exists)
+# On cherche d'abord si le SG existe déjà
+data "aws_security_groups" "existing" {
+  filter {
+    name   = "group-name"
+    values = ["dashboard-sg"]
+  }
+}
+
+# Création du SG seulement s'il n'existe pas
 resource "aws_security_group" "registry_sg" {
+  count       = length(data.aws_security_groups.existing.ids) == 0 ? 1 : 0
   name        = "dashboard-sg"
   description = "Allow SSH, Frontend, API, Adminer"
 
-  # Éviter les erreurs si le SG existe déjà
-  lifecycle {
-    create_before_destroy = false
-  }
   ingress {
     description = "SSH"
     from_port   = 22
@@ -103,13 +109,18 @@ resource "aws_security_group" "registry_sg" {
   }
 }
 
-# 4. Instance EC2
+# ID du Security Group (existant ou nouvellement créé)
+locals {
+  sg_id = length(data.aws_security_groups.existing.ids) > 0 ? data.aws_security_groups.existing.ids[0] : aws_security_group.registry_sg[0].id
+}
+
+# 5. Instance EC2
 resource "aws_instance" "registry_server" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t3.micro"
   key_name      = aws_key_pair.generated_key.key_name
 
-  vpc_security_group_ids = [aws_security_group.registry_sg.id]
+  vpc_security_group_ids = [local.sg_id]
 
   root_block_device {
     volume_size = 20
